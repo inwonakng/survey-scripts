@@ -1,0 +1,54 @@
+
+
+#show-more{
+    float:right;
+}
+
+#main-text{
+    padding:5px;
+}
+
+table.entities{
+    padding:10px;
+
+}
+.entities td,th{
+    width:200px;
+    text-align: center;
+}
+
+p.context-block{
+    padding:3px;
+}
+
+.flex-container{
+    display:flex
+}
+
+.flex-left{
+    flex:1.2;
+}
+
+.flex-right{
+    flex:0.8;
+    flex-direction: column;
+    display:flex;
+    align-items:center;
+}
+
+crowd-radio-button {
+    background-color: #ffffff; 
+    border: 1px solid rgb(0, 0, 0);
+    color: rgb(0, 0, 0); 
+    padding: 10px; 
+    width:100%;
+    cursor: pointer;
+    display: block;
+    border-radius: 5px;
+}
+  
+  
+  /* Add a background color on hover */
+.btn-group button:hover {
+    background-color: #8b8b8b;
+}
