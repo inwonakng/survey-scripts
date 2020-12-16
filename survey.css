@@ -9,16 +9,39 @@
 }
 
 table.entities{
+    border: 1px solid black;
+    border-radius: 5px;
     padding:10px;
-
+    margin-bottom: 10px;
 }
-.entities td,th{
+
+.entities td,
+.entities th{
     width:200px;
     text-align: center;
 }
 
+table.info-table {
+    border: 1px solid black;
+    padding:10px;
+    border-collapse: collapse;
+    /* border-spacing: 100px; */
+}
+
+.info-table tr,
+.info-table td,
+.info-table th{
+    padding:5px;
+    text-align:center;
+    border: 1px solid black;
+}
+
 p.context-block{
     padding:3px;
+}
+
+p:not(:last-child){
+    border-bottom:1px solid rgb(81, 157, 207);
 }
 
 .flex-container{
