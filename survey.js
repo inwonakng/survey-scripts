@@ -78,23 +78,24 @@ $(document).ready(()=>{
     })
 
     // setting the initial value here
-    lastbox = $('#dragbox').children().last()[0] 
-    lastinp = $(lastbox).find('input')[0]
-    vals = []
+    // lastbox = $('#dragbox').children().last()[0] 
+    // lastinp = $(lastbox).find('input')[0]
+    // vals = []
     
-    for (i of $(lastbox).find('li.drag-box')){
-        vals.push(i.innerHTML)
-    }
+    // for (i of $(lastbox).find('li.drag-box')){
+    //     vals.push(i.innerHTML)
+    // }
 
-    lastinp.value = JSON.stringify(vals)
+    // lastinp.value = JSON.stringify(vals)
 
     //dragstart event to initiate mouse dragging
     document.addEventListener('dragstart', function(e)
     {
         dragged = e.target
-        inp = $(e.target).parent().find('input')[0]
-        vals = JSON.parse(inp.value)
-        inp.value = JSON.stringify(remove(vals,e.target.innerHTML))
+        draggedfrom = $(e.target).parent().eq(0)
+        // inp = $(e.target).parent().find('input')[0]
+        // vals = JSON.parse(inp.value)
+        // inp.value = JSON.stringify(remove(vals,e.target.innerHTML))
     },false);
 
     document.addEventListener('dragover', function(e){
@@ -107,12 +108,92 @@ $(document).ready(()=>{
     document.addEventListener('drop', function(e)
     {
         if(e.target.getAttribute('data-draggable') == 'target'){
-            e.target.appendChild(dragged);
-            inp = $(e.target).find('input')[0]
-            vals = JSON.parse(inp.value)
-            // console.log('got value',vals)
-            vals.push(dragged.innerHTML)
-            inp.value = JSON.stringify(vals)
+            if(e.target.id == 'base'){
+                count = $(e.target).children().length+1
+                $(e.target).append(
+                    `<ul data-draggable="target" class="one-rank" id="dbox`+count+`">
+                        <input name="rank`+count+`" value="[]" class="drag-input">
+                        <a class="rank-title">#`+count+`</a>
+                    </ul>`
+                )
+                $(e.target).children().last()[0].appendChild(dragged)
+                reorder(draggedfrom,e)
+                update_input(draggedfrom,e,dragged)
+            }else{
+                reorder(draggedfrom,e)
+                update_input(draggedfrom,e,dragged)
+                e.target.appendChild(dragged);
+            }
+            // console.log(e.target)
+
+            // inp = $(e.target).find('input')[0]
+            // vals = JSON.parse(inp.value)
+            // // console.log('got value',vals)
+            // vals.push(dragged.innerHTML)
+            // inp.value = JSON.stringify(vals)
         }
     },false);
+
+
+    function reorder(draggedfrom,e){
+        // make sure it doesn't come from No Preference or the same box as dropping
+        if( draggedfrom[0].id != 'no-pref' 
+            && draggedfrom[0].id != e.target.id){
+            // length 1 would mean emtpy after it is dragged away
+            isempty = 1
+            if(e.target.id == 'base'){
+                // but for some reason when it is being dropped to 'base', the count is already decremented
+                isempty = 0
+            }
+            
+            if(draggedfrom.find('.drag-box').length==isempty){
+                draggedfrom.remove()
+            }
+
+            // fixing names and inputs after deleting\
+            idx = 1
+            for(box of $(e.target).parent().find('.one-rank')){
+                box.id = 'dbox'+idx
+                $(box).find('a')[0].innerHTML = '#'+idx
+                $(box).find('input')[0].name = 'rank'+idx
+                idx++
+            }
+        }
+    }
+
+    function update_input(draggedfrom,e,dragged){
+        
+        to_inp = $(e.target).find('input')[0]
+        if(e.target.id == 'base'){
+            to_inp = $(e.target).children().last().find('input')[0]
+        }
+        
+        // creating a new 'rank' in the box
+        if(draggedfrom[0].id == 'no-pref'){
+            vals = JSON.parse(to_inp.value)
+            vals.push(dragged.innerHTML)
+            to_inp.value = JSON.stringify(vals)
+        
+        // if going back to No Preference
+        }else if(e.target.id == 'no-pref'){
+            from_inp = $(draggedfrom[0]).find('input')[0]
+            from_vals = JSON.parse(from_inp.value)
+            entity = dragged.innerHTML
+            new_fromvals = remove(from_vals,entity)
+            from_inp.value = JSON.stringify(new_fromvals)
+        
+        // if going from existing box to another
+        }else{
+            from_inp = $(draggedfrom[0]).find('input')[0]
+            from_vals = JSON.parse(from_inp.value)
+            to_vals = JSON.parse(to_inp.value)
+
+            entity = dragged.innerHTML
+            new_fromvals = remove(from_vals,entity)
+            to_vals.push(entity)
+
+            from_inp.value = JSON.stringify(new_fromvals)
+            to_inp.value = JSON.stringify(to_vals)
+        }
+    }
 })
