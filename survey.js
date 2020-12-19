@@ -108,6 +108,7 @@ $(document).ready(()=>{
     document.addEventListener('drop', function(e)
     {
         if(e.target.getAttribute('data-draggable') == 'target'){
+            // removing placeholder first time
             if(e.target.id == 'base'){
                 count = $(e.target).children().length+1
                 $(e.target).append(
@@ -124,16 +125,15 @@ $(document).ready(()=>{
                 update_input(draggedfrom,e,dragged)
                 e.target.appendChild(dragged);
             }
-            // console.log(e.target)
+        // dropping onto the placeholder
+        }else if(e.target.className = 'rank-placeholder'){
+            container = $(e.target).parent()[0]
+            console.log($(e.target).find('.rank-placeholder'))
+            $(container).find('.rank-placeholder').eq(0).remove()
+            container.appendChild(dragged)
 
-            // inp = $(e.target).find('input')[0]
-            // vals = JSON.parse(inp.value)
-            // // console.log('got value',vals)
-            // vals.push(dragged.innerHTML)
-            // inp.value = JSON.stringify(vals)
         }
     },false);
-
 
     function reorder(draggedfrom,e){
         // make sure it doesn't come from No Preference or the same box as dropping
@@ -146,8 +146,19 @@ $(document).ready(()=>{
                 isempty = 0
             }
             
-            if(draggedfrom.find('.drag-box').length==isempty){
+            if(draggedfrom.find('.drag-box').length ==isempty){
                 draggedfrom.remove()
+                // if completely emptied out
+                if($('#base').find('.one-rank').length == 0){
+                    console.log('cleared!')
+                    $('#base').append(
+                        `<ul data-draggable="target" class="one-rank" id="dbox1">
+                            <input name="rank1" value="[]" class="drag-input">
+                            <a class="rank-title">#1</a>
+                            <a class="rank-placeholder">Drag and drop over here</a>
+                        </ul>`
+                    )
+                }
             }
 
             // fixing names and inputs after deleting\
@@ -159,6 +170,7 @@ $(document).ready(()=>{
                 idx++
             }
         }
+
     }
 
     function update_input(draggedfrom,e,dragged){

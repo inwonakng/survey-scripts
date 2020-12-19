@@ -134,6 +134,16 @@ li.title{
     margin-top:5px;
 }
 
+.rank-placeholder{
+    float:left;
+    width:450px;
+    height:30px;
+    text-align: center;
+    margin-top:5px;
+    color: gray;
+    user-select: none;
+}
+
 #no-pref{
     margin-left:10px;
 }
