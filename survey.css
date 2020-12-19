@@ -2,15 +2,27 @@
     float:right;
 }
 
+#show-less{
+    float:left;
+}
+
 .text-block{
-    padding:3px;
+    padding:10px;
+    border-radius: 5px;
+    margin-bottom:10px;
+}
+
+#main-text{
+    border: 2px solid rgb(81, 157, 207);
 }
 
 #original-comment{
-    border-bottom:2px solid rgb(211, 41, 106);
-    margin-bottom: 10px;
+    border:2px solid rgb(197, 62, 85);
 }
 
+.context-block{
+    border:2px solid black;   
+}
 
 table.entities{
     border: 1px solid black;
@@ -38,10 +50,6 @@ table.info-table{
     padding:5px;
     text-align:center;
     border: 1px solid black;
-}
-
-p:not(:last-child){
-    border-bottom:1px solid rgb(81, 157, 207);
 }
 
 .flex-container{

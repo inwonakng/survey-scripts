@@ -75,27 +75,23 @@ $(document).ready(()=>{
         if(at_end){
             event.target.disabled = true
         }
+        $('#show-less').prop('disabled',false)
     })
 
-    // setting the initial value here
-    // lastbox = $('#dragbox').children().last()[0] 
-    // lastinp = $(lastbox).find('input')[0]
-    // vals = []
-    
-    // for (i of $(lastbox).find('li.drag-box')){
-    //     vals.push(i.innerHTML)
-    // }
-
-    // lastinp.value = JSON.stringify(vals)
+    $('#show-less').on('click',event=>{
+        $('#context-container').children()[0].remove()
+        if($('#context-container').children().length == 0){
+            // if no more to hide
+            event.target.disabled=true
+        }
+        $('#show-more').prop('disabled',false)
+    })
 
     //dragstart event to initiate mouse dragging
     document.addEventListener('dragstart', function(e)
     {
         dragged = e.target
         draggedfrom = $(e.target).parent().eq(0)
-        // inp = $(e.target).parent().find('input')[0]
-        // vals = JSON.parse(inp.value)
-        // inp.value = JSON.stringify(remove(vals,e.target.innerHTML))
     },false);
 
     document.addEventListener('dragover', function(e){
