@@ -124,13 +124,6 @@ $(document).ready(()=>{
                 update_input(draggedfrom,e,dragged)
                 e.target.appendChild(dragged);
             }
-            // console.log(e.target)
-
-            // inp = $(e.target).find('input')[0]
-            // vals = JSON.parse(inp.value)
-            // // console.log('got value',vals)
-            // vals.push(dragged.innerHTML)
-            // inp.value = JSON.stringify(vals)
         }
     },false);
 
@@ -151,13 +144,14 @@ $(document).ready(()=>{
             }
 
             // fixing names and inputs after deleting\
-            idx = 1
-            for(box of $(e.target).parent().find('.one-rank')){
-                box.id = 'dbox'+idx
-                $(box).find('a')[0].innerHTML = '#'+idx
-                $(box).find('input')[0].name = 'rank'+idx
-                idx++
-            }
+        }
+
+        idx = 1
+        for(box of $('#base').find('.one-rank')){
+            box.id = 'dbox'+idx
+            $(box).find('a')[0].innerHTML = '#'+idx
+            $(box).find('input')[0].name = 'rank'+idx
+            idx++
         }
     }
 
