@@ -108,7 +108,15 @@ $(document).ready(()=>{
     document.addEventListener('drop', function(e)
     {
         if(e.target.getAttribute('data-draggable') == 'target'){
-            if(e.target.id == 'base'){
+            console.log(e.target)
+            if(e.target.className == 'rank-placeholder'){
+                // if the entity is being placed on to the placeholder
+                rank_slot = $(e.target).parent()[0]
+                rank_slot.appendChild(dragged)
+                e.target.remove()
+                update_input(draggedfrom,rank_slot,dragged)
+            }else if(e.target.id == 'base'){
+                // if the entity is being placed onto 'base' (starting new rank)
                 count = $(e.target).children().length+1
                 $(e.target).append(
                     `<ul data-draggable="target" class="one-rank" id="dbox`+count+`">
@@ -118,10 +126,10 @@ $(document).ready(()=>{
                 )
                 $(e.target).children().last()[0].appendChild(dragged)
                 reorder(draggedfrom,e)
-                update_input(draggedfrom,e,dragged)
+                update_input(draggedfrom,e.target,dragged)
             }else{
                 reorder(draggedfrom,e)
-                update_input(draggedfrom,e,dragged)
+                update_input(draggedfrom,e.target,dragged)
                 e.target.appendChild(dragged);
             }
         }
@@ -141,11 +149,27 @@ $(document).ready(()=>{
             
             if(draggedfrom.find('.drag-box').length==isempty){
                 draggedfrom.remove()
+                if($('#base').find('.one-rank').length == 0){
+                    $('#base').append(
+                        `<ul data-draggable="target" class="one-rank" id="dbox1">
+                            <input name="rank1" value="[]" class="drag-input">
+                            <a class="rank-title">#1</a>
+                            <a data-draggable="target" class="rank-placeholder">Drop the entities here</a>
+                        </ul>`
+                    )
+                }
             }
-
-            // fixing names and inputs after deleting\
+        }else if(draggedfrom[0].id == 'no-pref' && e.target.id == 'base'){
+            // deleting placeholder if new addition
+            console.log("checking base")
+            placeholder = $('#base').find('.rank-placeholder').eq(0).parent()[0]
+            console.log(placeholder)
+            if(placeholder){
+                placeholder.remove()
+            }
         }
 
+        // fixing names and inputs after deleting
         idx = 1
         for(box of $('#base').find('.one-rank')){
             box.id = 'dbox'+idx
@@ -155,11 +179,11 @@ $(document).ready(()=>{
         }
     }
 
-    function update_input(draggedfrom,e,dragged){
+    function update_input(draggedfrom,draggedto,dragged){
         
-        to_inp = $(e.target).find('input')[0]
-        if(e.target.id == 'base'){
-            to_inp = $(e.target).children().last().find('input')[0]
+        to_inp = $(draggedto).find('input')[0]
+        if(draggedto.id == 'base'){
+            to_inp = $(draggedto).children().last().find('input')[0]
         }
         
         // creating a new 'rank' in the box
@@ -169,7 +193,7 @@ $(document).ready(()=>{
             to_inp.value = JSON.stringify(vals)
         
         // if going back to No Preference
-        }else if(e.target.id == 'no-pref'){
+        }else if(draggedto.id == 'no-pref'){
             from_inp = $(draggedfrom[0]).find('input')[0]
             from_vals = JSON.parse(from_inp.value)
             entity = dragged.innerHTML
