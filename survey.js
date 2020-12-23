@@ -9,12 +9,33 @@ function remove(arr,ele){
 function set_data(comment_idxs,dataset_idxs){
     cur_idx = $('#page-index').val()
 
-    // main_idx = $('#comment-idx')[0].value
-    text = comments[comment_idxs[cur_idx]]
-    $('#main-text').html(text)
+    com_idx = comment_idxs[cur_idx]
+    dat_idx = dataset_idxs[cur_idx]
+    
+    // setting the main and original comment
+    fetch(
+        'https://inwonakng.github.io/survey-scripts/comments/'+dat_idx+'_comments.json'
+    ).then(r=>r.json()).then( comments=>{
+        $('#main-text').html(comments[com_idx])
+        $('#original-comment').html(comments[0])
 
-    // setting the original comment
-    $('#original-comment').html(comments[0])
+    })
+
+
+    // setting the hidden reference comments. max is 10
+    fetch(
+        'https://inwonakng.github.io/survey-scripts/relations/'+dat_idx+'_relations.json'
+    ).then(r=>r.json()).then(reftree=>{
+        for(i == com_idx -1; i >= 0 && i >= com_idx -11; i--){
+            innertext =  '<p class="context-block text-block">'
+            innertext += comments[i]
+            innertext += '</p>'
+            $('#context-container').prepend(
+                innertext
+            )
+        }
+    })
+        
 
     // emtpying the tables first
     $('#entities-labels').empty()
@@ -158,7 +179,7 @@ $(document).ready(()=>{
     })
 
     $('#show-less').on('click',event=>{
-        $('#context-container').children()[0].remove()
+        $('#context-container').children().css('display','none')
         if($('#context-container').children().length == 0){
             // if no more to hide
             event.target.disabled=true
