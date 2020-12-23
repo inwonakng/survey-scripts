@@ -5,14 +5,20 @@ function remove(arr,ele){
     return arr
 }
 
-$(document).ready(()=>{
-    // setting the first visible comment
-    main_idx = $('#comment-idx')[0].value
-    text = comments[main_idx]
-    $('#main-text')[0].innerHTML=text
+// this function sets up the each page and gets the corresponding comments/entity infos
+function set_data(comment_idxs,dataset_idxs){
+    cur_idx = $('#page-index').val()
+
+    // main_idx = $('#comment-idx')[0].value
+    text = comments[comment_idxs[cur_idx]]
+    $('#main-text').html(text)
 
     // setting the original comment
-    $('#original-comment')[0].innerHTML = comments[0]
+    $('#original-comment').html(comments[0])
+
+    // emtpying the tables first
+    $('#entities-labels').empty()
+    $('#info-section').empty()
 
     // creating table to explain entities
     table = document.createElement('table')
@@ -49,12 +55,88 @@ $(document).ready(()=>{
             body.insertCell().innerHTML = entity_values[ee][param]
         }
     }
-
     $('#info-section').append(table)
+}
+
+$(document).ready(()=>{
+    comment_idxs = JSON.parse($('#comment-idx').val())
+    dataset_idxs = JSON.parse($('#dataset-idx').val())
+    var alph = ['A','B','C','D','E','F']
 
 
+    // adding the inputs and drag boxes
+    for(idx=0;idx<comment_idxs.length;idx++){
 
+        drag = `<div id="drag-container`+idx+`" style="display:none">
+                    <div class="drag-container ranking-container">
+                        <li class="title">Drag over here to create rankings</li>
+                        <ul data-draggable="target" id="base">
+                            <ul data-draggable="target" class="one-rank" id="dbox1">
+                                <a class="rank-title">#1</a>
+                                <a data-draggable="target" class="rank-placeholder">Drop the entities here</a>
+                            </ul>
+                        </ul>
+                    </div>
+                    <div class="drag-container no-pref">
+                    <li class="title">No Preference</li>
+                    <ul class="no-pref-block" data-draggable="target">`
+            
+        div_string = '<div id="q'+idx+'inputgroup">'
+        for(i = 0; i < Object.keys(entity_values).length; i++){
+            div_string += '<input id ="q'+idx+'rank'+(i+1)+'" name="q'+idx+'rank'+(i+1)+'" value="[]">'
+            drag += '<li class="drag-box" data-draggable="item" draggable="true">Entity '+alph[i]+'</li>'
+        }
+        div_string += '</div>'
+        drag += '</ul></div></div>'
+        
+        $('#dragboxes').append(drag) 
+        
+        // create new set of inputs
+        
+        $('#responses').append(div_string)
+
+    }
+
+    $('#drag-container0').css('display','block')
+
+    $('#continue').on('click',event=>{
+        $('#practice').css('display','none')
+        $('.one-comment').css('display','block')
+        $('#page-index').attr('max',comment_idxs.length)
+        $('#page-index').val(0)
+        $('#scenario-index').html('1/'+comment_idxs.length)
+        $('#prevbtn').prop('disabled',true)
+        set_data(comment_idxs,dataset_idxs)
+
+        event.target.style.display = 'none'
+    })
+
+    $('#nextbtn').on('click',event=>{
+        oldpage = $('#page-index').val()
+        $('#page-index').val(oldpage+1)
+        $('#drag-container'+oldpage).css('display','none')
+        $('#drag-container'+(oldpage+1)).css('display','block')
+        $('#scenario-index').html((oldpage+2)+'/'+comment_idxs.length)
+        set_data(comment_idxs,dataset_idxs)
+        if(oldpage == comment_idxs.length-2){ $(event.target).prop('disabled',true) }
+        $('#prevbtn').prop('disabled',false)
+    })
+
+    $('#prevbtn').on('click',event=>{
+        oldpage = $('#page-index').val()
+        $('#page-index').val(oldpage-1)
+        $('#drag-container'+oldpage).css('display','none')
+        $('#drag-container'+(oldpage-1)).css('display','block')
+        $('#scenario-index').html((oldpage)+'/'+comment_idxs.length)
+        set_data(comment_idxs,dataset_idxs)
+        if(oldpage == 1){ $(event.target).prop('disabled',true) }
+        $('#nextbtn').prop('disabled',false)
+    })
+    
     $('#show-more').on('click',event=>{
+        cur_idx = $('#page-index').val()
+        main_idx = comment_idxs[cur_idx]
+
         count = $('#context-container .context-block').length
         next_context = ref_tree[main_idx][count]
 
@@ -63,16 +145,13 @@ $(document).ready(()=>{
         innertext += '</p>'
         $('#context-container').prepend(
             innertext
-            // '<p class="context-block">hi lol</p>'
         )
         
         // check if there is more to show after this. 
         // if not disable the button
         at_end = ref_tree[main_idx][count+1] == null
-        
-        console.log(event.target)
 
-        if(at_end){
+        if(at_end || count == 9){
             event.target.disabled = true
         }
         $('#show-less').prop('disabled',false)
@@ -101,10 +180,8 @@ $(document).ready(()=>{
     },false);  
 
     //drop event to allow the element to be dropped into valid targets
-    document.addEventListener('drop', function(e)
-    {
+    document.addEventListener('drop', function(e){
         if(e.target.getAttribute('data-draggable') == 'target'){
-            console.log(e.target)
             if(e.target.className == 'rank-placeholder'){
                 // if the entity is being placed on to the placeholder
                 rank_slot = $(e.target).parent()[0]
@@ -116,7 +193,6 @@ $(document).ready(()=>{
                 count = $(e.target).children().length+1
                 $(e.target).append(
                     `<ul data-draggable="target" class="one-rank" id="dbox`+count+`">
-                        <input name="rank`+count+`" value="[]" class="drag-input">
                         <a class="rank-title">#`+count+`</a>
                     </ul>`
                 )
@@ -133,8 +209,11 @@ $(document).ready(()=>{
 
 
     function reorder(draggedfrom,e){
+        cur_idx = $('#page-index').val()
+        base = $('#drag-container'+cur_idx +' #base')
+
         // make sure it doesn't come from No Preference or the same box as dropping
-        if( draggedfrom[0].id != 'no-pref' 
+        if( draggedfrom[0].className != 'no-pref-block' 
             && draggedfrom[0].id != e.target.id){
             // length 1 would mean emtpy after it is dragged away
             isempty = 1
@@ -145,52 +224,60 @@ $(document).ready(()=>{
             
             if(draggedfrom.find('.drag-box').length==isempty){
                 draggedfrom.remove()
-                if($('#base').find('.one-rank').length == 0){
-                    $('#base').append(
+                if(base.find('.one-rank').length == 0){
+                    base.append(
                         `<ul data-draggable="target" class="one-rank" id="dbox1">
-                            <input name="rank1" value="[]" class="drag-input">
                             <a class="rank-title">#1</a>
                             <a data-draggable="target" class="rank-placeholder">Drop the entities here</a>
                         </ul>`
                     )
                 }
             }
-        }else if(draggedfrom[0].id == 'no-pref' && e.target.id == 'base'){
+        }else if(draggedfrom[0].className == 'no-pref-block'){
             // deleting placeholder if new addition
-            console.log("checking base")
-            placeholder = $('#base').find('.rank-placeholder').eq(0).parent()[0]
-            console.log(placeholder)
-            if(placeholder){
+            if(e.target.id == 'base'){
+                // delete the whole bar
+                placeholder = base.find('.rank-placeholder').parent()
+            }else if(e.target.className == 'one-rank'){
+                // delete just the placeholder
+                placeholder = base.find('.rank-placeholder')
+            }
+            if(placeholder.length > 0){
                 placeholder.remove()
             }
         }
 
         // fixing names and inputs after deleting
         idx = 1
-        for(box of $('#base').find('.one-rank')){
+        for(box of base.find('.one-rank')){
             box.id = 'dbox'+idx
             $(box).find('a')[0].innerHTML = '#'+idx
-            $(box).find('input')[0].name = 'rank'+idx
             idx++
         }
     }
 
     function update_input(draggedfrom,draggedto,dragged){
-        
-        to_inp = $(draggedto).find('input')[0]
+        cur_idx = $('#page-index').val()
+
+        // to_inp = $(draggedto).find('input')[0]
         if(draggedto.id == 'base'){
-            to_inp = $(draggedto).children().last().find('input')[0]
+            // to_inp = $(draggedto).children().last().find('input')[0]
+            to_idx = $(draggedto).find('.one-rank').length
+        }else if(draggedto.className != 'no-pref-block'){
+            to_idx = draggedto.id.slice(-1)
         }
+        to_inp = $('#q'+cur_idx+'rank'+to_idx)[0]
         
         // creating a new 'rank' in the box
-        if(draggedfrom[0].id == 'no-pref'){
+        if(draggedfrom[0].className == 'no-pref-block'){
             vals = JSON.parse(to_inp.value)
             vals.push(dragged.innerHTML)
             to_inp.value = JSON.stringify(vals)
-        
-        // if going back to No Preference
-        }else if(draggedto.id == 'no-pref'){
-            from_inp = $(draggedfrom[0]).find('input')[0]
+            
+            // if going back to No Preference
+        }else if(draggedto.className == 'no-pref-block'){
+            from_idx = draggedfrom[0].id.slice(-1)
+            from_inp = $('#q'+cur_idx+'rank'+from_idx)[0]
             from_vals = JSON.parse(from_inp.value)
             entity = dragged.innerHTML
             new_fromvals = remove(from_vals,entity)
@@ -198,7 +285,8 @@ $(document).ready(()=>{
         
         // if going from existing box to another
         }else{
-            from_inp = $(draggedfrom[0]).find('input')[0]
+            from_idx = draggedfrom[0].id.slice(-1)
+            from_inp = $('#q'+cur_idx+'rank'+from_idx)[0]
             from_vals = JSON.parse(from_inp.value)
             to_vals = JSON.parse(to_inp.value)
 
