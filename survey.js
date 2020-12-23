@@ -21,21 +21,24 @@ function set_data(comment_idxs,dataset_idxs){
 
     })
 
+    console.log('successfully set main comments!')
+
 
     // setting the hidden reference comments. max is 10
     fetch(
         'https://inwonakng.github.io/survey-scripts/relations/'+dat_idx+'_relations.json'
     ).then(r=>r.json()).then(reftree=>{
-        for(i == com_idx -1; i >= 0 && i >= com_idx -11; i--){
-            innertext =  '<p class="context-block text-block">'
-            innertext += comments[i]
-            innertext += '</p>'
+        reversed = reftree.reverse()
+        for(r of reversed){
             $('#context-container').prepend(
-                innertext
+                '<p class="context-block text-block" style = "display:none">'
+                + comments[r]
+                + '</p>'
             )
         }
     })
-        
+    
+    console.log('successfully set reference comments!')
 
     // emtpying the tables first
     $('#entities-labels').empty()
@@ -155,26 +158,10 @@ $(document).ready(()=>{
     })
     
     $('#show-more').on('click',event=>{
-        cur_idx = $('#page-index').val()
-        main_idx = comment_idxs[cur_idx]
 
-        count = $('#context-container .context-block').length
-        next_context = ref_tree[main_idx][count]
-
-        innertext =  '<p class="context-block text-block">'
-        innertext += comments[next_context]
-        innertext += '</p>'
-        $('#context-container').prepend(
-            innertext
-        )
-        
-        // check if there is more to show after this. 
-        // if not disable the button
-        at_end = ref_tree[main_idx][count+1] == null
-
-        if(at_end || count == 9){
-            event.target.disabled = true
-        }
+        // if(at_end || count == 9){
+        //     event.target.disabled = true
+        // }
         $('#show-less').prop('disabled',false)
     })
 
