@@ -12,6 +12,12 @@ function set_data(comment_idxs,dataset_idxs){
     com_idx = comment_idxs[cur_idx]
     dat_idx = dataset_idxs[cur_idx]
     
+    $('#context-container').empty()
+
+    // reset the buttons here
+    $('#nextbtn').prop('disabled',false)
+    $('#prevbtn').prop('disabled',true)
+
     // setting the main and original comment
     fetch(
         'https://inwonakng.github.io/survey-scripts/comments/'+dat_idx+'_comments.json'
@@ -19,72 +25,76 @@ function set_data(comment_idxs,dataset_idxs){
         $('#main-text').html(comments[com_idx])
         $('#original-comment').html(comments[0])
 
+        // setting the hidden reference comments. max is 10
+        fetch(
+            'https://inwonakng.github.io/survey-scripts/relations/'+dat_idx+'_quote_relations.json'
+        ).then(r=>r.json()).then(reftree=>{
+            for(r of reftree[com_idx]){
+                console.log('index',r)
+                $('#context-container').prepend(
+                    '<p class="context-block text-block" style = "display:none">'
+                    + comments[r]
+                    + '</p>'
+                )
+            }
+        })
     })
-
-    console.log('successfully set main comments!')
-
-
-    // setting the hidden reference comments. max is 10
-    fetch(
-        'https://inwonakng.github.io/survey-scripts/relations/'+dat_idx+'_relations.json'
-    ).then(r=>r.json()).then(reftree=>{
-        reversed = reftree.reverse()
-        for(r of reversed){
-            $('#context-container').prepend(
-                '<p class="context-block text-block" style = "display:none">'
-                + comments[r]
-                + '</p>'
-            )
-        }
-    })
-    
-    console.log('successfully set reference comments!')
+    console.log('uhh')
 
     // emtpying the tables first
     $('#entities-labels').empty()
     $('#info-section').empty()
 
-    // creating table to explain entities
-    table = document.createElement('table')
-    table.className = 'entities'
-    header = table.insertRow()
-    body = table.insertRow()
-    for(ent in entities){
-        th = document.createElement('th')
-        th.innerHTML=ent
-        header.append(th)
-        body.insertCell().innerHTML=entities[ent]
-    }
-    $('#entities-labels').append(table)
-    //finished with table here 
-    
+    console.log('starting')
+    // making tables from the entity info
+    fetch(
+        'https://inwonakng.github.io/survey-scripts/entities/'+dat_idx+'_entities.json'
+    ).then(r=>r.json()).then(ent_vals=>{
+        console.log('here')
+        entities = ent_vals['entities']
+        entity_values = ent_vals['entity_values']
 
-    // filling out the entity information table
-    
-    table = document.createElement('table')
-    table.className = 'info-table'
-    header = table.insertRow()
-    header.insertCell()
-    
-    for(ent in entity_values){
-        th = document.createElement('th')
-        th.innerHTML=ent
-        header.append(th)
-    }
-
-    for(param in entity_values[ent]){
+        table = document.createElement('table')
+        table.className = 'entities'
+        header = table.insertRow()
         body = table.insertRow()
-        body.insertCell().innerHTML=param
-        for(ee in entity_values){
-            body.insertCell().innerHTML = entity_values[ee][param]
+        for(ent in entities){
+            th = document.createElement('th')
+            th.innerHTML=ent
+            header.append(th)
+            body.insertCell().innerHTML=entities[ent]
         }
-    }
-    $('#info-section').append(table)
+        $('#entities-labels').append(table)
+        //finished with table here 
+
+        // filling out the entity information table
+        
+        table = document.createElement('table')
+        table.className = 'info-table'
+        header = table.insertRow()
+        header.insertCell()
+        
+        for(ent in entity_values){
+            th = document.createElement('th')
+            th.innerHTML=ent
+            header.append(th)
+        }
+    
+        for(param in entity_values[ent]){
+            body = table.insertRow()
+            body.insertCell().innerHTML=param
+            for(ee in entity_values){
+                body.insertCell().innerHTML = entity_values[ee][param]
+            }
+        }
+        $('#info-section').append(table)
+    })
 }
 
 $(document).ready(()=>{
     comment_idxs = JSON.parse($('#comment-idx').val())
     dataset_idxs = JSON.parse($('#dataset-idx').val())
+    num_entities = JSON.parse($('#num-entities').val())
     var alph = ['A','B','C','D','E','F']
 
 
@@ -106,7 +116,7 @@ $(document).ready(()=>{
                     <ul class="no-pref-block" data-draggable="target">`
             
         div_string = '<div id="q'+idx+'inputgroup">'
-        for(i = 0; i < Object.keys(entity_values).length; i++){
+        for(i = 0; i < num_entities[idx]; i++){
             div_string += '<input id ="q'+idx+'rank'+(i+1)+'" name="q'+idx+'rank'+(i+1)+'" value="[]">'
             drag += '<li class="drag-box" data-draggable="item" draggable="true">Entity '+alph[i]+'</li>'
         }
@@ -158,17 +168,32 @@ $(document).ready(()=>{
     })
     
     $('#show-more').on('click',event=>{
-
-        // if(at_end || count == 9){
-        //     event.target.disabled = true
-        // }
+        boxes = $('#context-container').children().toArray().reverse()
+        for([i,c] of boxes.entries()){
+            if(c.style.display == 'none'){
+                c.style.display = 'block'
+                console.log('showing index',i)
+                break
+            }
+        }
+        if(i == boxes.length-1){
+            event.target.disabled = true
+        }
+        
         $('#show-less').prop('disabled',false)
     })
 
     $('#show-less').on('click',event=>{
-        $('#context-container').children().css('display','none')
-        if($('#context-container').children().length == 0){
-            // if no more to hide
+        boxes = $('#context-container').children().toArray()
+        for([i,c] of boxes.entries()){
+            if(c.style.display == 'block'){
+                c.style.display = 'none'
+                break
+            }
+        }
+
+        // if no more to hide
+        if(i == boxes.length-1){
             event.target.disabled=true
         }
         $('#show-more').prop('disabled',false)
