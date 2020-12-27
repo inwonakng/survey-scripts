@@ -145,7 +145,7 @@ $(document).ready(()=>{
     })
 
     $('#nextbtn').on('click',event=>{
-        oldpage = $('#page-index').val()
+        oldpage = Number($('#page-index').val())
         $('#page-index').val(oldpage+1)
         $('#drag-container'+oldpage).css('display','none')
         $('#drag-container'+(oldpage+1)).css('display','block')
@@ -156,7 +156,7 @@ $(document).ready(()=>{
     })
 
     $('#prevbtn').on('click',event=>{
-        oldpage = $('#page-index').val()
+        oldpage = Number($('#page-index').val())
         $('#page-index').val(oldpage-1)
         $('#drag-container'+oldpage).css('display','none')
         $('#drag-container'+(oldpage-1)).css('display','block')
