@@ -1,1 +1,18 @@
-{"entities": {"Entity A": "Boston University", "Entity B": "University of Michigan"}, "entity_values": {"Boston University": {"Location": "Boston", "Undergraduate Size": "16456", "Institution Type": "Private university"}, "University of Michigan": {"Location": "Ann Arbor, Michigan", "Undergraduate Size": "28395", "Institution Type": "Sea grant colleges, Space grant colleges, Public university, Flagship university"}}}
+{
+    "entities": {
+        "Entity A": "Boston University",
+        "Entity B": "University of Michigan"
+    },
+    "entity_values": {
+        "Boston University": {
+            "Location": "Boston",
+            "Undergraduate Size": "16456",
+            "Institution Type": "Private university"
+        },
+        "University of Michigan": {
+            "Location": "Ann Arbor, Michigan",
+            "Undergraduate Size": "28395",
+            "Institution Type": "Sea grant colleges, Space grant colleges, Public university, Flagship university"
+        }
+    }
+}

@@ -14,10 +14,6 @@ function set_data(comment_idxs,dataset_idxs){
     
     $('#context-container').empty()
 
-    // reset the buttons here
-    $('#nextbtn').prop('disabled',false)
-    $('#prevbtn').prop('disabled',true)
-
     // setting the main and original comment
     fetch(
         'https://inwonakng.github.io/survey-scripts/comments/'+dat_idx+'_comments.json'
@@ -30,7 +26,6 @@ function set_data(comment_idxs,dataset_idxs){
             'https://inwonakng.github.io/survey-scripts/relations/'+dat_idx+'_quote_relations.json'
         ).then(r=>r.json()).then(reftree=>{
             for(r of reftree[com_idx]){
-                console.log('index',r)
                 $('#context-container').prepend(
                     '<p class="context-block text-block" style = "display:none">'
                     + comments[r]
@@ -39,18 +34,15 @@ function set_data(comment_idxs,dataset_idxs){
             }
         })
     })
-    console.log('uhh')
 
     // emtpying the tables first
     $('#entities-labels').empty()
     $('#info-section').empty()
 
-    console.log('starting')
     // making tables from the entity info
     fetch(
         'https://inwonakng.github.io/survey-scripts/entities/'+dat_idx+'_entities.json'
     ).then(r=>r.json()).then(ent_vals=>{
-        console.log('here')
         entities = ent_vals['entities']
         entity_values = ent_vals['entity_values']
 
@@ -130,6 +122,13 @@ $(document).ready(()=>{
         $('#responses').append(div_string)
 
     }
+    $('#page-index').val('Sample')
+
+
+    
+    // reset the buttons here
+    $('#nextbtn').prop('disabled',false)
+    $('#prevbtn').prop('disabled',true)
 
     $('#drag-container0').css('display','block')
 
@@ -172,7 +171,7 @@ $(document).ready(()=>{
         for([i,c] of boxes.entries()){
             if(c.style.display == 'none'){
                 c.style.display = 'block'
-                console.log('showing index',i)
+                c.scrollIntoView()
                 break
             }
         }
@@ -188,6 +187,7 @@ $(document).ready(()=>{
         for([i,c] of boxes.entries()){
             if(c.style.display == 'block'){
                 c.style.display = 'none'
+                boxes[i+1].scrollIntoView()
                 break
             }
         }

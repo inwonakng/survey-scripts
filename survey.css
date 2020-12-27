@@ -65,6 +65,7 @@ table.info-table{
     flex-direction: column;
     display:flex;
     align-items:center;
+    margin:5px;
 }
 
 li.title{
