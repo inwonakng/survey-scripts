@@ -18,17 +18,24 @@ function set_data(comment_idxs,dataset_idxs){
     fetch(
         'https://inwonakng.github.io/survey-scripts/comments/'+dat_idx+'_comments.json'
     ).then(r=>r.json()).then( comments=>{
-        $('#main-text').html(comments[com_idx])
-        $('#original-comment').html(comments[0])
+        $('#post-title').html(comments.title)
+        $('#main-text').html(comments.comments[com_idx])
+        $('#original-comment').html(comments.comments[0])
 
         // setting the hidden reference comments. max is 10
         fetch(
             'https://inwonakng.github.io/survey-scripts/relations/'+dat_idx+'_quote_relations.json'
         ).then(r=>r.json()).then(reftree=>{
             for(r in reftree[com_idx]){
+                type = '<b class="type-tag">Previous reply to the original post</b>'
+                if(reftree[com_idx][r] == "quote"){
+                    type = '<b class="type-tag">Post the commenter in blue is replying to</b>'
+                }
                 $('#context-container').prepend(
                     '<p class="context-block text-block" style = "display:none">'
-                    + comments[r]
+                    + type
+                    +'<br><br>'
+                    + comments.comments[r]
                     + '</p>'
                 )
             }
@@ -140,8 +147,9 @@ $(document).ready(()=>{
         $('#scenario-index').html('1/'+comment_idxs.length)
         $('#prevbtn').prop('disabled',true)
         set_data(comment_idxs,dataset_idxs)
-
         event.target.style.display = 'none'
+
+        $('.flex-container')[1].scrollIntoView()
     })
 
     $('#nextbtn').on('click',event=>{
@@ -153,6 +161,8 @@ $(document).ready(()=>{
         set_data(comment_idxs,dataset_idxs)
         if(oldpage == comment_idxs.length-2){ $(event.target).prop('disabled',true) }
         $('#prevbtn').prop('disabled',false)
+
+        $('.flex-container')[1].scrollIntoView()
     })
 
     $('#prevbtn').on('click',event=>{
@@ -164,6 +174,8 @@ $(document).ready(()=>{
         set_data(comment_idxs,dataset_idxs)
         if(oldpage == 1){ $(event.target).prop('disabled',true) }
         $('#nextbtn').prop('disabled',false)
+
+        $('.flex-container')[1].scrollIntoView()
     })
     
     $('#show-more').on('click',event=>{
@@ -178,7 +190,6 @@ $(document).ready(()=>{
         if(i == boxes.length-1){
             event.target.disabled = true
         }
-        
         $('#show-less').prop('disabled',false)
     })
 
@@ -187,7 +198,8 @@ $(document).ready(()=>{
         for([i,c] of boxes.entries()){
             if(c.style.display == 'block'){
                 c.style.display = 'none'
-                boxes[i+1].scrollIntoView()
+                console.log('box index',i)
+                if(i < boxes.length-1){ boxes[i+1].scrollIntoView() }
                 break
             }
         }

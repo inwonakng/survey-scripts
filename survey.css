@@ -24,6 +24,10 @@
     border:2px solid black;   
 }
 
+.type-tag{
+    color: rgb(131, 131, 131);
+}
+
 table.entities{
     border: 1px solid black;
     border-radius: 5px;
