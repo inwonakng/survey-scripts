@@ -25,7 +25,7 @@ function set_data(comment_idxs,dataset_idxs){
         fetch(
             'https://inwonakng.github.io/survey-scripts/relations/'+dat_idx+'_quote_relations.json'
         ).then(r=>r.json()).then(reftree=>{
-            for(r of reftree[com_idx]){
+            for(r in reftree[com_idx]){
                 $('#context-container').prepend(
                     '<p class="context-block text-block" style = "display:none">'
                     + comments[r]
