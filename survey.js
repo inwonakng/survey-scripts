@@ -5,12 +5,71 @@ function remove(arr,ele){
     return arr
 }
 
-// this function sets up the each page and gets the corresponding comments/entity infos
-function set_data(comment_idxs,dataset_idxs){
-    cur_idx = $('#page-index').val()
+function scroll_to_top(){
+    $('.main')[0].scrollIntoView()
+}
 
-    com_idx = comment_idxs[cur_idx]
-    dat_idx = dataset_idxs[cur_idx]
+function make_pairs(arr){
+    retarr = []
+    for(i=0;i<arr.length;i++){
+        for(j=i+1;j<arr.length;j++){
+            retarr.push([arr[i],arr[j]])
+        }
+    }
+    return retarr
+}
+
+function make_hilight(before){
+    $('#hilight').remove()
+
+    background = $('<line/>',
+                        {
+                            'id':'hilight',
+                            'class': 'back-hilight',
+                            'x1': $(before).attr('x1'),
+                            'y1': $(before).attr('y1'),
+                            'x2': $(before).attr('x2'),
+                            'y2': $(before).attr('y2')
+                        })
+
+    el = $('<line/>',
+                    {   
+                        'id': before.id,   
+                        'class': $(before).attr('class'),
+                        'x1': $(before).attr('x1'),
+                        'y1': $(before).attr('y1'),
+                        'x2': $(before).attr('x2'),
+                        'y2': $(before).attr('y2')
+                    })
+
+    base = $(before).closest('#base')
+    $(before).remove()
+    base.append(background)
+    base.append(el)
+    base.html(base.html())
+}
+
+function check_input(button){
+    // take the button and checks if related input is filled
+    [from,to] = button.id.split('to')
+
+    box = $(button).closest('.graph-container')
+    
+    // checking checkbox
+    if($(box).find('#'+from+'-'+to+'-NA').attr('checked')){
+        return true
+    }
+    // checking slider
+    if($(box).find('#'+from+'-vs-'+to).val()){
+        return true
+    }
+    return false
+}
+
+// this function sets up the each page and gets the corresponding comments/entity infos
+function set_data(){
+    com_idx = window.comment_idxs[window.page_index]
+    dat_idx = window.dataset_idxs[window.page_index]
     
     $('#context-container').empty()
 
@@ -32,11 +91,11 @@ function set_data(comment_idxs,dataset_idxs){
                     type = '<b class="type-tag">Post the commenter in blue is replying to</b>'
                 }
                 $('#context-container').prepend(
-                    '<p class="context-block text-block" style = "display:none">'
+                    '<div style = "display:none"><p class="context-block text-block">'
                     + type
                     +'<br><br>'
                     + comments.comments[r]
-                    + '</p>'
+                    + '</p></div>'
                 )
             }
         })
@@ -91,256 +150,217 @@ function set_data(comment_idxs,dataset_idxs){
 }
 
 $(document).ready(()=>{
-    comment_idxs = JSON.parse($('#comment-idx').val())
-    dataset_idxs = JSON.parse($('#dataset-idx').val())
-    num_entities = JSON.parse($('#num-entities').val())
-    var alph = ['A','B','C','D','E','F']
+    // these values here are basically global scope. Do not need to re-read
+    window.comment_idxs = JSON.parse($('#comment-idx').val())
+    window.dataset_idxs = JSON.parse($('#dataset-idx').val())
+    window.num_entities = JSON.parse($('#num-entities').val())
+    window.page_index = 'Sample'
+    // var alph = ['A','B','C','D','E','F']
+    base_length = 150
+    verti = ((base_length/3)**2)**.5
+    ori_x=130,ori_y = 25
+    offset_x = 40
+    offset_y = 10
 
 
-    // adding the inputs and drag boxes
-    for(idx=0;idx<comment_idxs.length;idx++){
-
-        drag = `<div id="drag-container`+idx+`" style="display:none">
-                    <div class="drag-container ranking-container">
-                        <li class="title">Drag over here to create rankings</li>
-                        <ul data-draggable="target" id="base">
-                            <ul data-draggable="target" class="one-rank" id="dbox1">
-                                <a class="rank-title">#1</a>
-                                <a data-draggable="target" class="rank-placeholder">Drop the entities here</a>
-                            </ul>
-                        </ul>
-                    </div>
-                    <div class="drag-container no-pref">
-                    <li class="title">No Preference</li>
-                    <ul class="no-pref-block" data-draggable="target">`
-            
-        div_string = '<div id="q'+idx+'inputgroup">'
-        for(i = 0; i < num_entities[idx]; i++){
-            div_string += '<input id ="q'+idx+'rank'+(i+1)+'" name="q'+idx+'rank'+(i+1)+'" value="[]">'
-            drag += '<li class="drag-box" data-draggable="item" draggable="true">Entity '+alph[i]+'</li>'
+    // ====== making the input UI here! ======
+    
+    num_entities.forEach((value,index,arr)=>{
+        // if number of entities is 3
+        if(value == 3){
+            coords = {
+                // top,left
+                'A': [ori_y,ori_x],
+                'B': [ori_y + verti,ori_x+base_length/2],
+                'C': [ori_y + verti,ori_x-base_length/2]
+            }
+        }else{
+            // if only two give some(25) more y offset to bring down.
+            coords = {
+                'A': [ori_y+25,ori_x-base_length/2],
+                'B': [ori_y+25,ori_x+base_length/2]
+            }
         }
-        div_string += '</div>'
-        drag += '</ul></div></div>'
-        
-        $('#dragboxes').append(drag) 
-        
-        // create new set of inputs
-        
-        $('#responses').append(div_string)
 
-    }
-    $('#page-index').val('Sample')
+        // drawing the lines inside base before attaching
+        base = $('<svg/>',{'id':'base'})
+        for([from,to] of make_pairs(Object.keys(coords))){
+            base.append(
+                $('<line/>',{
+                        'id': from+'to'+to,
+                        'class':'trig-button',
+                        'x1': coords[from][1],
+                        'y1': coords[from][0],
+                        'x2': coords[to][1],
+                        'y2': coords[to][0]
+                    }
+                )
+            )
+        }
 
+        diagram = $('<div/>',{'class':'diagram flex-left-input'})
+        for(c in coords){
+            [y,x] = coords[c]
+            diagram.append(
+                $('<a/>',{'class':'entity','id':'entity'+c,'html':'Entity '+c })
+                    .css('top',y-offset_y)
+                    .css('left',x-offset_x)
+            )
+        }
+        
+        scores_area = $('<div/>',{'class':'scores-area flex-right-input'})
+        for([fir,sec] of make_pairs(Object.keys(coords))){
+            scores_area.append(
+                $('<div/>', {'class':'select-score','id':'input-'+fir+'to'+sec})
+                    .append(
+                        $('<b/>',{'class':'score-title'}).html(fir+' vs '+sec)
+                    ).append(
+                        $('<div/>',{'class':'slider-box'})
+                        .append($('<a/>').html(fir+' preferred'))
+                        .append($('<crowd-slider/>',{'name':fir+'-vs-'+sec,'id':fir+'-vs-'+sec,'min':-5,'max':5,'pin':'','required':''}))
+                        .append($('<a/>').html(sec+' preferred'))
+                    ).append(
+                        $('<crowd-checkbox/>',{'name':fir+'-'+sec+'-NA','id':fir+'-'+sec+'-NA'}).html('No preference expressed')
+                    )
+                .hide()
+            )
+        }
+
+
+        // putting together the whole div for each page
+        $('#all-inputs')
+            .append(
+                $('<div/>',{'id':'graphspot'+index,'class':'flex-container graph-container'}
+                ).append(
+                    diagram.append(base)
+                ).append(scores_area).hide()
+            )
+    })
+
+    // gotta refresh the page for svg to work
+    $("body").html($("body").html())
+
+    // ====== Done with the input UI ======
 
     
     // reset the buttons here
     $('#nextbtn').prop('disabled',false)
     $('#prevbtn').prop('disabled',true)
 
-    $('#drag-container0').css('display','block')
+})
 
-    $('#continue').on('click',event=>{
-        $('#practice').css('display','none')
-        $('.one-comment').css('display','block')
-        $('#page-index').attr('max',comment_idxs.length)
-        $('#page-index').val(0)
-        $('#scenario-index').html('1/'+comment_idxs.length)
-        $('#prevbtn').prop('disabled',true)
-        set_data(comment_idxs,dataset_idxs)
-        event.target.style.display = 'none'
+// ====== Button actions below! ======
 
-        $('.flex-container')[1].scrollIntoView()
-    })
-
-    $('#nextbtn').on('click',event=>{
-        oldpage = Number($('#page-index').val())
-        $('#page-index').val(oldpage+1)
-        $('#drag-container'+oldpage).css('display','none')
-        $('#drag-container'+(oldpage+1)).css('display','block')
-        $('#scenario-index').html((oldpage+2)+'/'+comment_idxs.length)
-        set_data(comment_idxs,dataset_idxs)
-        if(oldpage == comment_idxs.length-2){ $(event.target).prop('disabled',true) }
-        $('#prevbtn').prop('disabled',false)
-
-        $('.flex-container')[1].scrollIntoView()
-    })
-
-    $('#prevbtn').on('click',event=>{
-        oldpage = Number($('#page-index').val())
-        $('#page-index').val(oldpage-1)
-        $('#drag-container'+oldpage).css('display','none')
-        $('#drag-container'+(oldpage-1)).css('display','block')
-        $('#scenario-index').html((oldpage)+'/'+comment_idxs.length)
-        set_data(comment_idxs,dataset_idxs)
-        if(oldpage == 1){ $(event.target).prop('disabled',true) }
-        $('#nextbtn').prop('disabled',false)
-
-        $('.flex-container')[1].scrollIntoView()
-    })
+//CONTINUE button 
+$(document).on('click','#continue',function(){
+    $('#practice').hide()
+    $('.one-comment').css('display','block')
     
-    $('#show-more').on('click',event=>{
-        boxes = $('#context-container').children().toArray().reverse()
-        for([i,c] of boxes.entries()){
-            if(c.style.display == 'none'){
-                c.style.display = 'block'
-                c.scrollIntoView()
-                break
-            }
+    $('#scenario-index').html('1/'+window.comment_idxs.length)
+    $('#prevbtn').prop('disabled',true)
+    window.page_index = 0
+    set_data()
+    this.style.display = 'none'
+    
+    $('#all-inputs')
+        .children().first().show()
+        .find('.trig-button').first().trigger('click')
+    scroll_to_top()
+})
+
+// NEXT button
+$(document).on('click','#nextbtn',function(){
+    window.page_index += 1
+    window.page_index = window.page_index
+    $('#scenario-index').html((window.page_index+1)+'/'+window.comment_idxs.length)
+
+    $('#all-inputs').children().hide()
+    $('#graphspot'+(window.page_index)).show().find('.trig-button').first().trigger('click')
+    
+    set_data()
+    if(window.page_index == window.comment_idxs.length-1){ $(this).prop('disabled',true) }
+    $('#prevbtn').prop('disabled',false)
+    
+    scroll_to_top()
+})
+
+// PREV button
+$(document).on('click','#prevbtn',function(){
+    window.page_index -= 1
+    $('#page-index').val(window.page_index)
+
+    $('#all-inputs').children().hide()
+    $('#graphspot'+(window.page_index)).show().find('.trig-button').first().trigger('click')
+
+    $('#scenario-index').html((window.page_index+1)+'/'+window.comment_idxs.length)
+    set_data()
+    if(window.page_index == 0){ $(this).prop('disabled',true) }
+    $('#nextbtn').prop('disabled',false)
+
+    scroll_to_top()
+})
+
+// Show MORE comments
+$(document).on('click','#show-more',function(){
+    boxes = $('#context-container').children().toArray().reverse()
+    for([i,c] of boxes.entries()){
+        if($(c).css('display') == 'none'){
+            $(c).slideToggle("fast","linear")
+            scroll_to_top()
+            break
         }
-        if(i == boxes.length-1){
-            event.target.disabled = true
-        }
-        $('#show-less').prop('disabled',false)
-    })
+    }
+    if(i == boxes.length-1){
+        this.disabled = true
+    }
+    $('#show-less').prop('disabled',false)
+})
 
-    $('#show-less').on('click',event=>{
-        boxes = $('#context-container').children().toArray()
-        for([i,c] of boxes.entries()){
-            if(c.style.display == 'block'){
-                c.style.display = 'none'
-                console.log('box index',i)
-                if(i < boxes.length-1){ boxes[i+1].scrollIntoView() }
-                break
-            }
-        }
-
-        // if no more to hide
-        if(i == boxes.length-1){
-            event.target.disabled=true
-        }
-        $('#show-more').prop('disabled',false)
-    })
-
-    //dragstart event to initiate mouse dragging
-    document.addEventListener('dragstart', function(e)
-    {
-        dragged = e.target
-        draggedfrom = $(e.target).parent().eq(0)
-    },false);
-
-    document.addEventListener('dragover', function(e){
-        if(e.target){
-            e.preventDefault();
-        }
-    },false);  
-
-    //drop event to allow the element to be dropped into valid targets
-    document.addEventListener('drop', function(e){
-        if(e.target.getAttribute('data-draggable') == 'target'){
-            if(e.target.className == 'rank-placeholder'){
-                // if the entity is being placed on to the placeholder
-                rank_slot = $(e.target).parent()[0]
-                rank_slot.appendChild(dragged)
-                e.target.remove()
-                update_input(draggedfrom,rank_slot,dragged)
-            }else if(e.target.id == 'base'){
-                // if the entity is being placed onto 'base' (starting new rank)
-                count = $(e.target).children().length+1
-                $(e.target).append(
-                    `<ul data-draggable="target" class="one-rank" id="dbox`+count+`">
-                        <a class="rank-title">#`+count+`</a>
-                    </ul>`
-                )
-                $(e.target).children().last()[0].appendChild(dragged)
-                reorder(draggedfrom,e)
-                update_input(draggedfrom,e.target,dragged)
-            }else{
-                reorder(draggedfrom,e)
-                update_input(draggedfrom,e.target,dragged)
-                e.target.appendChild(dragged);
-            }
-        }
-    },false);
-
-
-    function reorder(draggedfrom,e){
-        cur_idx = $('#page-index').val()
-        base = $('#drag-container'+cur_idx +' #base')
-
-        // make sure it doesn't come from No Preference or the same box as dropping
-        if( draggedfrom[0].className != 'no-pref-block' 
-            && draggedfrom[0].id != e.target.id){
-            // length 1 would mean emtpy after it is dragged away
-            isempty = 1
-            if(e.target.id == 'base'){
-                // but for some reason when it is being dropped to 'base', the count is already decremented
-                isempty = 0
-            }
-            
-            if(draggedfrom.find('.drag-box').length==isempty){
-                draggedfrom.remove()
-                if(base.find('.one-rank').length == 0){
-                    base.append(
-                        `<ul data-draggable="target" class="one-rank" id="dbox1">
-                            <a class="rank-title">#1</a>
-                            <a data-draggable="target" class="rank-placeholder">Drop the entities here</a>
-                        </ul>`
-                    )
-                }
-            }
-        }else if(draggedfrom[0].className == 'no-pref-block'){
-            // deleting placeholder if new addition
-            if(e.target.id == 'base'){
-                // delete the whole bar
-                placeholder = base.find('.rank-placeholder').parent()
-            }else if(e.target.className == 'one-rank'){
-                // delete just the placeholder
-                placeholder = base.find('.rank-placeholder')
-            }
-            if(placeholder.length > 0){
-                placeholder.remove()
-            }
-        }
-
-        // fixing names and inputs after deleting
-        idx = 1
-        for(box of base.find('.one-rank')){
-            box.id = 'dbox'+idx
-            $(box).find('a')[0].innerHTML = '#'+idx
-            idx++
+// Show LESS comments
+$(document).on('click','#show-less',function(){
+    boxes = $('#context-container').children().toArray()
+    for([i,c] of boxes.entries()){
+        if($(c).css('display') == 'block'){
+            $(c).slideToggle("fast","linear")
+            scroll_to_top()
+            break
         }
     }
 
-    function update_input(draggedfrom,draggedto,dragged){
-        cur_idx = $('#page-index').val()
+    // if no more to hide
+    if(i == boxes.length-1){
+        this.disabled=true
+    }
+    $('#show-more').prop('disabled',false)
+})
 
-        // to_inp = $(draggedto).find('input')[0]
-        if(draggedto.id == 'base'){
-            // to_inp = $(draggedto).children().last().find('input')[0]
-            to_idx = $(draggedto).find('.one-rank').length
-        }else if(draggedto.className != 'no-pref-block'){
-            to_idx = draggedto.id.slice(-1)
-        }
-        to_inp = $('#q'+cur_idx+'rank'+to_idx)[0]
-        
-        // creating a new 'rank' in the box
-        if(draggedfrom[0].className == 'no-pref-block'){
-            vals = JSON.parse(to_inp.value)
-            vals.push(dragged.innerHTML)
-            to_inp.value = JSON.stringify(vals)
-            
-            // if going back to No Preference
-        }else if(draggedto.className == 'no-pref-block'){
-            from_idx = draggedfrom[0].id.slice(-1)
-            from_inp = $('#q'+cur_idx+'rank'+from_idx)[0]
-            from_vals = JSON.parse(from_inp.value)
-            entity = dragged.innerHTML
-            new_fromvals = remove(from_vals,entity)
-            from_inp.value = JSON.stringify(new_fromvals)
-        
-        // if going from existing box to another
+// Clicking the pair link 
+$(document).on('click','.trig-button',function(){
+    [from,to] = this.id.split('to')
+    
+    scoresarea = $(this).closest('.graph-container').find('.scores-area')
+
+    for(c of scoresarea.children()){
+        $(c).hide()
+    }
+    scoresarea.find("#input-"+from+'to'+to).show()
+
+    // re-color buttons if inpute satisfied
+    // base = $(this).closest('#base')
+    
+    // put hilight in background
+
+    base = $(this).closest('#base')
+
+    make_hilight(this)
+    
+    for(b of base.find('.trig-button')){
+        if(check_input(b)){
+            $(b).addClass('button-filled')
         }else{
-            from_idx = draggedfrom[0].id.slice(-1)
-            from_inp = $('#q'+cur_idx+'rank'+from_idx)[0]
-            from_vals = JSON.parse(from_inp.value)
-            to_vals = JSON.parse(to_inp.value)
-
-            entity = dragged.innerHTML
-            new_fromvals = remove(from_vals,entity)
-            to_vals.push(entity)
-
-            from_inp.value = JSON.stringify(new_fromvals)
-            to_inp.value = JSON.stringify(to_vals)
+            $(b).removeClass('button-filled')
         }
     }
 })
+
+// ====== Done with button actions ======

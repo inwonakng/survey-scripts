@@ -1,0 +1,32 @@
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="./drag-drop.js"></script>
+    <link rel="stylesheet" href="./drag-drop.css">
+
+</head>
+<body>
+    <div class="drag-container ranking-container">
+        <li class="title">Drag over here to create rankings</li>
+        <ul data-draggable="target" id="base">
+            <ul data-draggable="target" class="one-rank" id="dbox1">
+                <a class="rank-title">#1</a>
+                <a data-draggable="target" class="rank-placeholder">Drop the entities here</a>
+            </ul>
+        </ul>
+    </div>
+    <div class="drag-container no-pref">
+        <li class="title">No Preference</li>
+        <ul class="no-pref-block" data-draggable="target">
+            <li class="drag-box" data-draggable="item" draggable="true">Entity A</li>
+            <li class="drag-box" data-draggable="item" draggable="true">Entity B</li>
+            <li class="drag-box" data-draggable="item" draggable="true">Entity C</li>
+            <li class="drag-box" data-draggable="item" draggable="true">Entity D</li>
+        </ul>
+    </div>
+    <div style="display: none;">
+        <input id ="qSamplerank1" name="qSamplerank1" value="[]">
+        <input id ="qSamplerank2" name="qSamplerank2" value="[]">
+        <input id ="qSamplerank3" name="qSamplerank3" value="[]">
+        <input id ="qSamplerank4" name="qSamplerank4" value="[]">
+    </div>
+</body>
