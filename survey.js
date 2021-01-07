@@ -269,7 +269,16 @@ $(document).on('click','#continue',function(){
 })
 
 // NEXT button
+// also checks if all the inputs are filled out
 $(document).on('click','#nextbtn',function(){
+    buttons = $('#graphspot'+window.page_index).find('.trig-button')
+    for(b of buttons){
+        if(!check_input(b)){
+            alert('Please respond to all the questions before moving on!')
+            return
+        }
+    }
+
     window.page_index += 1
     window.page_index = window.page_index
     $('#scenario-index').html((window.page_index+1)+'/'+window.comment_idxs.length)
