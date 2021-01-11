@@ -150,6 +150,8 @@ function set_data(){
 }
 
 $(document).ready(()=>{
+    // stupid man's sleep function
+    for(i=0;i<10000000;i++){}
     // these values here are basically global scope. Do not need to re-read
     window.comment_idxs = JSON.parse($('#comment-idx').val())
     window.dataset_idxs = JSON.parse($('#dataset-idx').val())
