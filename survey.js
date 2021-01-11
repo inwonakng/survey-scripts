@@ -240,7 +240,7 @@ $(document).ready(()=>{
     })
 
     // gotta refresh the page for svg to work
-    $("body").html($("body").html())
+    $("#reloadhere").html($("#reloadhere").html())
 
     // ====== Done with the input UI ======
 
