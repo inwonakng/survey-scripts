@@ -130,19 +130,24 @@ function set_data(){
         table = document.createElement('table')
         table.className = 'info-table'
         header = table.insertRow()
-        header.insertCell()
+        header.insertCell().className = 'label'
         
         for(ent in entity_values){
-            th = document.createElement('th')
+            th = header.insertCell()
             th.innerHTML=ent
+            th.className = 'value header'
             header.append(th)
         }
     
         for(param in entity_values[ent]){
             body = table.insertRow()
-            body.insertCell().innerHTML=param
+            label = body.insertCell()
+            label.innerHTML=param
+            label.className = 'label'
             for(ee in entity_values){
-                body.insertCell().innerHTML = entity_values[ee][param]
+                val = body.insertCell()
+                val.innerHTML = entity_values[ee][param]
+                val.className = 'value'
             }
         }
         $('#info-section').append(table)

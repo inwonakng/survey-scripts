@@ -44,11 +44,26 @@ table.entities{
 }
 
 table.info-table{
+    table-layout: fixed;
     border: 1px solid black;
     padding:10px;
+    width:100%;
     border-collapse: collapse;
     /* border-spacing: 100px; */
 }
+
+.info-table .header{
+    font-weight: bold;
+}
+
+.info-table .label{
+    width:110px;
+}
+
+.info-table .value{
+    width:100%;
+}
+
 
 .info-table tr,
 .info-table td,
