@@ -272,3 +272,14 @@ input[type=radio]{
 #confirm-code{
     color:rgb(71, 132, 245);
 }
+
+#new-discussion{
+    height: 40px;
+    background-color: rgb(141, 212, 212);
+    /* text-align: center; */
+    display: flex;
+    /* flex; */
+    align-items: center;
+    justify-content: center;
+    border-radius: 7px;
+}
