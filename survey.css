@@ -119,11 +119,13 @@ table.info-table{
 }
 
 .button{
-    width: 60px;
+    width: 120px;
+    height:40px;
     color:black;
     background-color: white;
     border-radius: 5px;
-    border:1px black solid;
+    border:1px grey solid;
+    /* font-weight: 500; */
 }
 .button:hover{
     cursor:pointer;
